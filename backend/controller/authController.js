@@ -61,7 +61,8 @@ export const register = async (req, res) => {
    // Send email verification link with welcome message
    const verificationLink = `${process.env.FRONTEND_URL}/verify-token?token=${token}&email=${email}`;
    const emailData = {
-       from: '"Agro-Mart"<koiralabishal3@gmail.com>',
+      //  from: '"Agro-Mart"<koiralabishal3@gmail.com>',
+       from: '"Agro-Mart"<jpt1896@gmail.com>',
        to: email,
        subject: "Welcome to Agro-Mart - Verify Your Email",
        html: `
