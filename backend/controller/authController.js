@@ -1,6 +1,7 @@
 // import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import validator from "validator";
 import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
 
@@ -14,6 +15,16 @@ export const register = async (req, res) => {
   if (!name || !email || !password) {
     return res.json({ success: false, message: "Please fill in all fields" });
   }
+
+  if (!validator.isEmail(email)) {
+    return res.json({ success: false, message: "Invalid email" });
+  }
+
+  //strong password validation include upercase, lower case. special charector and number
+  if (!validator.isStrongPassword(password)) {
+    return res.json({ success: false, message: "Password must be Strong" });
+  }
+  
   try {
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
