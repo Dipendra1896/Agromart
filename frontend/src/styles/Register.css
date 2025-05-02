@@ -1,0 +1,141 @@
+/* Register.css - Styles for the registration form */
+
+.register-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.register-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 28px;
+}
+
+.error-message {
+  padding: 10px;
+  background-color: #fff5f5;
+  color: #e53e3e;
+  border: 1px solid #feb2b2;
+  border-radius: 5px;
+  margin-bottom: 16px;
+}
+
+.success-message {
+  padding: 10px;
+  background-color: #f0fff4;
+  color: #38a169;
+  border: 1px solid #9ae6b4;
+  border-radius: 5px;
+  margin-bottom: 16px;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 15px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  font-size: 15px;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  width: 100%;
+  padding-right: 45px; /* Space for the eye button */
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  z-index: 5;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.password-toggle-icon span {
+  line-height: 1;
+  display: block;
+}
+
+.form-group input[type="file"] {
+  padding: 10px;
+  background-color: #f7fafc;
+}
+
+.file-help-text {
+  font-size: 12px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.register-btn {
+  margin-top: 10px;
+  padding: 14px;
+  background: linear-gradient(to right, #4299e1, #3182ce);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.register-btn:hover {
+  background: linear-gradient(to right, #3182ce, #2b6cb0);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations for conditional fields */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-group {
+  animation: fadeIn 0.3s ease-out forwards;
+} 

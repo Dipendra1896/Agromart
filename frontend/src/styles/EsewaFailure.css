@@ -1,0 +1,122 @@
+.esewa-failure-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #fdf2f2;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.failure-icon {
+  font-size: 5rem;
+  color: #e53e3e;
+  margin-bottom: 1.5rem;
+  animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  
+  20%, 80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%, 50%, 70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%, 60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+.esewa-failure-container h1 {
+  color: #e53e3e;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.failure-message {
+  color: #742a2a;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.help-message {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  max-width: 550px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.retry-btn, .home-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+}
+
+.retry-btn:hover {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
+}
+
+.home-btn {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.home-btn:hover {
+  background: #f3f4f6;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 600px) {
+  .esewa-failure-container h1 {
+    font-size: 2rem;
+  }
+  
+  .failure-icon {
+    font-size: 4rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .retry-btn, .home-btn {
+    width: 100%;
+    justify-content: center;
+  }
+} 

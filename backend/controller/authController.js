@@ -4,16 +4,19 @@ import jwt from "jsonwebtoken";
 import validator from "validator";
 import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
+// import dotenv from "dotenv";
+
+// dotenv.config();
 
 
 
 
 //user registration
-export const register = async (req, res) => {
+export const registerBuyer = async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
-    return res.json({ success: false, message: "Please fill in all fields" });
+    return res.json({ success: false, message: "Please fill in all required fields" });
   }
 
   if (!validator.isEmail(email)) {
@@ -34,10 +37,17 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     
-    const user = new userModel({ name, email, password: hashedPassword , verifyToken: "", verifyTokenExpiresAt: 0});
+    const user = new userModel({ 
+      name, 
+      email, 
+      password: hashedPassword, 
+      verifyToken: "", 
+      verifyTokenExpiresAt: 0,
+      userType: "buyer"
+    });
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, "secret#koiralabishal123", {
         expiresIn: "7d",
       });
 
@@ -61,15 +71,15 @@ export const register = async (req, res) => {
     
 
    // Send email verification link with welcome message
-   const verificationLink = `${process.env.FRONTEND_URL}/verify-token?token=${token}&email=${email}`;
+   const verificationLink = `http://localhost:5173/verify-token?token=${token}&email=${email}`;
    const emailData = {
        from: '"Agro-Mart"<koiralabishal3@gmail.com>',
       //  from: '"Agro-Mart"<jpt1896@gmail.com>',
        to: email,
-       subject: "Welcome to Agro-Mart - Verify Your Em ail",
+       subject: "Welcome to Agro-Mart as a Buyer - Verify Your Email",
        html: `
            <h1>Welcome to Agro-Mart, ${name}!</h1>
-           <p>We are thrilled to have you with us. Agro-Mart is your trusted platform for agricultural solutions.</p>
+           <p>We are thrilled to have you join as a buyer. Agro-Mart is your trusted platform for agricultural solutions.</p>
            <p>Please verify your email to activate your account by clicking the link below:</p>
            <a href="${verificationLink}">Verify Your Email</a>
            <p>This link will expire in 24 hours.</p>
@@ -81,7 +91,186 @@ export const register = async (req, res) => {
    };
 
 
-    res.json({ success: true, message: "Registration successfully.\n Verification link is sent to your email." });
+    res.json({ success: true, message: "Registration successfull.\n Verification link is sent to your email." });
+
+    await transporter.sendMail(emailData);
+    
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+
+//farmer registration
+export const registerFarmer = async (req, res) => {
+  const { name, email, password, farmName, farmLocation, phoneNumber, licenseDocument } = req.body;
+  
+
+  
+
+  if (!name || !email || !password || !farmName || !farmLocation || !phoneNumber || !licenseDocument) {
+    return res.json({ success: false, message: "Please fill in all required fields" });
+  }
+
+
+
+  if (!validator.isEmail(email)) {
+    return res.json({ success: false, message: "Invalid email" });
+  }
+
+  //strong password validation include uppercase, lowercase, special character and number
+  if (!validator.isStrongPassword(password)) {
+    return res.json({ success: false, message: "Password must be strong" });
+  }
+     
+  try {
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.json({ success: false, message: "User already exists" });
+    }
+ 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new userModel({ 
+      name, 
+      email, 
+      password: hashedPassword, 
+      verifyToken: "", 
+      verifyTokenExpiresAt: 0,
+      userType: "farmer",
+      farmName,
+      farmLocation,
+      phoneNumber,
+      licenseDocument
+    });
+    await user.save();
+
+    const token = jwt.sign({ id: user._id }, "secret#koiralabishal123", {
+      expiresIn: "7d",
+    });
+
+    user.verifyToken = token;
+    user.verifyTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours expiration
+    await user.save(); // Save the updated user with the token
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // Send email verification link with welcome message
+    const verificationLink = `http://localhost:5173/verify-token?token=${token}&email=${email}`;
+    const emailData = {
+      from: '"Agro-Mart"<koiralabishal3@gmail.com>',
+      to: email,
+      subject: "Welcome to Agro-Mart as a Farmer - Verify Your Email",
+      html: `
+          <h1>Welcome to Agro-Mart, ${name}!</h1>
+          <p>We are thrilled to have you join as a farmer. Agro-Mart is your trusted platform for agricultural solutions.</p>
+          <p>Please verify your email to activate your account by clicking the link below:</p>
+          <a href="${verificationLink}">Verify Your Email</a>
+          <p>This link will expire in 24 hours.</p>
+          <br />
+          <p>If you have any questions, feel free to reach out to us at agromart@gmail.com</p>
+          <p>Happy farming,</p>
+          <p><strong>The Agro-Mart Team</strong></p>
+      `,
+    };
+
+    res.json({ success: true, message: "Farmer registration successful.\n Verification link is sent to your email." });
+
+    await transporter.sendMail(emailData);
+    
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+
+//supplier registration
+export const registerSupplier = async (req, res) => {
+  const { name, email, password, businessName, businessAddress, phoneNumber, businessCertificate } = req.body;
+  // let businessCertificate = '';
+  
+  // Get file path if a file was uploaded
+  // if (req.file) {
+  //   businessCertificate = req.file.path;
+  // } else {
+  //   return res.json({ success: false, message: "Business certificate is required" });
+  // }
+
+  if (!name || !email || !password || !businessName || !businessAddress || !phoneNumber || !businessCertificate) {
+    return res.json({ success: false, message: "Please fill in all required fields" });
+  }
+
+  if (!validator.isEmail(email)) {
+    return res.json({ success: false, message: "Invalid email" });
+  }
+
+  //strong password validation include uppercase, lowercase, special character and number
+  if (!validator.isStrongPassword(password)) {
+    return res.json({ success: false, message: "Password must be strong" });
+  }
+  
+  try {
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.json({ success: false, message: "User already exists" });
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new userModel({ 
+      name, 
+      email, 
+      password: hashedPassword, 
+      verifyToken: "", 
+      verifyTokenExpiresAt: 0,
+      userType: "supplier",
+      businessName,
+      businessAddress,
+      phoneNumber,
+      businessCertificate
+    });
+    await user.save();
+
+    const token = jwt.sign({ id: user._id }, "secret#koiralabishal123", {
+      expiresIn: "7d",
+    });
+
+    user.verifyToken = token;
+    user.verifyTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours expiration
+    await user.save(); // Save the updated user with the token
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // Send email verification link with welcome message
+    const verificationLink = `http://localhost:5173/verify-token?token=${token}&email=${email}`;
+    const emailData = {
+      from: '"Agro-Mart"<koiralabishal3@gmail.com>',
+      to: email,
+      subject: "Welcome to Agro-Mart as a Supplier - Verify Your Email",
+      html: `
+          <h1>Welcome to Agro-Mart, ${name}!</h1>
+          <p>We are thrilled to have you join as a supplier. Agro-Mart is your trusted platform for agricultural solutions.</p>
+          <p>Please verify your email to activate your account by clicking the link below:</p>
+          <a href="${verificationLink}">Verify Your Email</a>
+          <p>This link will expire in 24 hours.</p>
+          <br />
+          <p>If you have any questions, feel free to reach out to us at agromart@gmail.com</p>
+          <p>Happy business,</p>
+          <p><strong>The Agro-Mart Team</strong></p>
+      `,
+    };
+
+    res.json({ success: true, message: "Supplier registration successful.\n Verification link is sent to your email." });
 
     await transporter.sendMail(emailData);
     
@@ -118,7 +307,7 @@ export const login = async (req, res) => {
       return res.json({ success: false, message: "Invalid password" });
     }
 
-    const loginToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const loginToken = jwt.sign({ id: user._id }, "secret#koiralabishal123", {
       expiresIn: "7d",
     });
     res.cookie("loginToken", loginToken, {
@@ -130,9 +319,30 @@ export const login = async (req, res) => {
     
     if(!user.isVerified){
         return res.json({success: false, message: 'Email is not verified yet. Please verify your email.'});
-
     }
-    res.json({ success: true, message: "Logged In successfully" });
+    // Return userType along with success message
+    res.json({ 
+      success: true, 
+      message: "Logged In successfully",
+      userType: user.userType,
+      userData: {
+        name: user.name,
+        email: user.email,
+        id: user._id.toString(),
+        userType: user.userType,
+        gender: user.gender,
+        phoneNumber: user.phoneNumber,
+        profilePic: user.profilePic,
+        farmName: user.farmName,
+        farmLocation: user.farmLocation,
+        businessName: user.businessName,
+        businessAddress: user.businessAddress,
+        licenseDocument: user.licenseDocument,
+        businessCertificate: user.businessCertificate,
+        
+        // Add any other user fields you want to access
+      }
+    });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -284,6 +494,36 @@ export const resetPassword = async (req, res) => {
     }
     
 
+};
+
+// Check if a user with specific email and type exists
+export const checkUserExists = async (req, res) => {
+  try {
+    const { email, userType } = req.body;
+    
+    if (!email) {
+      return res.json({ 
+        success: false, 
+        message: "Email is required",
+        exists: false
+      });
+    }
+    
+    // Check if user exists with this email and userType
+    const user = await userModel.findOne({ email, userType });
+    
+    return res.json({
+      success: true,
+      exists: !!user
+    });
+    
+  } catch (error) {
+    return res.json({ 
+      success: false, 
+      message: error.message,
+      exists: false
+    });
+  }
 };
 
 

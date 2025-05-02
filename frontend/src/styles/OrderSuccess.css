@@ -1,0 +1,142 @@
+.order-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+  text-align: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.success-icon {
+  font-size: 60px;
+  color: #4CAF50;
+  margin-bottom: 20px;
+}
+
+.order-success h2 {
+  color: #4CAF50;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.success-message {
+  color: #555;
+  margin-bottom: 30px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.order-details {
+  width: 100%;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.order-details h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  text-align: left;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed #eee;
+  font-size: 15px;
+}
+
+.detail-row.total {
+  font-weight: bold;
+  border-bottom: none;
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+  font-size: 18px;
+}
+
+.detail-section {
+  margin-top: 20px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.detail-icon {
+  margin-right: 15px;
+  font-size: 22px;
+  color: #666;
+  min-width: 24px;
+  margin-top: 3px;
+}
+
+.detail-label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+.detail-item p {
+  margin: 0;
+  color: #555;
+}
+
+.continue-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 3px 10px rgba(76, 175, 80, 0.2);
+}
+
+.continue-btn:hover {
+  background-color: #3d8b40;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.continue-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 500px) {
+  .order-success {
+    padding: 20px 15px;
+  }
+  
+  .success-icon {
+    font-size: 50px;
+  }
+  
+  .order-success h2 {
+    font-size: 20px;
+  }
+  
+  .detail-row, .detail-item {
+    font-size: 14px;
+  }
+  
+  .detail-row.total {
+    font-size: 16px;
+  }
+} 

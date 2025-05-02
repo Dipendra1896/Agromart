@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSewa Signature Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        div {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .copy-btn {
+            background-color: #333;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>eSewa Signature Generator</h1>
+    <p>This tool helps generate the correct HMAC SHA256 signature for eSewa integration following their documentation.</p>
+    
+    <div>
+        <label for="total_amount">Total Amount:</label>
+        <input type="text" id="total_amount" value="100.00" placeholder="100.00">
+        
+        <label for="transaction_uuid">Transaction UUID:</label>
+        <input type="text" id="transaction_uuid" value="123456789" placeholder="123456789">
+        
+        <label for="product_code">Product Code:</label>
+        <input type="text" id="product_code" value="EPAYTEST" placeholder="EPAYTEST">
+        
+        <label for="secret_key">Secret Key:</label>
+        <input type="text" id="secret_key" value="8gBm/:&EnhH.1/q" placeholder="8gBm/:&EnhH.1/q">
+        
+        <button onclick="generateSignature()">Generate Signature</button>
+    </div>
+    
+    <div>
+        <label for="message">Message (auto-generated):</label>
+        <textarea id="message" rows="3" readonly></textarea>
+        
+        <label for="result">Signature Result:</label>
+        <div id="result">
+            <span id="signature"></span>
+            <button class="copy-btn" onclick="copySignature()">Copy</button>
+        </div>
+    </div>
+    
+    <div>
+        <h2>Form Data Preview</h2>
+        <pre id="form-data"></pre>
+    </div>
+    
+    <script>
+        function generateSignature() {
+            const total_amount = document.getElementById('total_amount').value;
+            const transaction_uuid = document.getElementById('transaction_uuid').value;
+            const product_code = document.getElementById('product_code').value;
+            const secret_key = document.getElementById('secret_key').value;
+            
+            // Create the message string exactly as required by eSewa
+            // Make sure to keep the exact order: total_amount,transaction_uuid,product_code
+            const message = total_amount + ',' + transaction_uuid + ',' + product_code;
+            document.getElementById('message').value = message;
+            
+            // Generate the HMAC SHA256 signature as per eSewa documentation
+            const hash = CryptoJS.HmacSHA256(message, secret_key);
+            const hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+            
+            // Display the result
+            document.getElementById('signature').textContent = hashInBase64;
+            
+            // Show form data that would be sent
+            const formData = {
+                amount: (parseFloat(total_amount) - 50).toFixed(2), // Example: amount without delivery fee
+                tax_amount: "0.00",
+                total_amount: total_amount,
+                transaction_uuid: transaction_uuid,
+                product_code: product_code,
+                product_service_charge: "0.00",
+                product_delivery_charge: "50.00", // Example delivery charge
+                signed_field_names: "total_amount,transaction_uuid,product_code",
+                signature: hashInBase64
+            };
+            
+            document.getElementById('form-data').textContent = JSON.stringify(formData, null, 2);
+        }
+        
+        function copySignature() {
+            const signature = document.getElementById('signature').textContent;
+            navigator.clipboard.writeText(signature)
+                .then(() => {
+                    alert('Signature copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+        }
+        
+        // Generate signature on load
+        window.onload = generateSignature;
+    </script>
+</body>
+</html> 
