@@ -4,29 +4,27 @@ import User from "../models/userModel.js";
 // Add agri input
 export const addAgriInput = async (req, res) => {
   try {
-       const { name, price, category, quantity, unit, description, supplierEmail } = req.body;
+    const { name, price, category, quantity, unit, description, supplierEmail } = req.body;
 
-  // Validation 
-  if (!name || !price || !category || !quantity || !unit || !description ) {
-    return res.json({ success: false, message: "Please fill in all required fields" });
-  }
+    // Validation 
+    if (!name || !price || !category || !quantity || !unit || !description ) {
+      return res.json({ success: false, message: "Please fill in all required fields" });
+    }
 
-  if (price <= 0 || quantity <= 0) {
-    return res.json({ success: false, message: "Price and quantity must be greater than 0" });
-  }
+    if (price <= 0 || quantity <= 0) {
+      return res.json({ success: false, message: "Price and quantity must be greater than 0" });
+    }
 
-  if (description && description.length > 100) {
-    return res.json({ success: false, message: "Description must be less than 100 characters" });
-  }
+    if (description && description.length > 100) {
+      return res.json({ success: false, message: "Description must be less than 100 characters" });
+    }
 
-  // if (image.size > 1024 * 1024 * 2) {
-  //   return res.json({ success: false, message: "Image must be less than 2MB" });
-  // }
-  if (!req.file) {
-    return res.json({ success: false, message: "Agricultural Input Image is required" });
-  }
+    // Check if file was uploaded via multer
+    if (!req.file) {
+      return res.json({ success: false, message: "Agricultural Input Image is required" });
+    }
     
-    // Create image object with file details
+    // Create image object with file details from multer
     const image = {
       name: req.file.filename,
       path: req.file.path,
@@ -37,6 +35,7 @@ export const addAgriInput = async (req, res) => {
     if (image.size > 1024 * 1024 * 2) {
       return res.json({ success: false, message: "Product image must be less than 2MB" });
     }
+    
     // Create new agri-input
     const newAgriInput = new AgriInput({
       name,
@@ -58,6 +57,7 @@ export const addAgriInput = async (req, res) => {
     });
     
   } catch (error) {
+    console.error("Error adding agri-input:", error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -125,6 +125,28 @@ export const getSuppliersWithAgriInputs = async (req, res) => {
           userType: 'supplier' 
         });
         
+        // Determine the profile picture URL
+        let profilePicUrl = "https://randomuser.me/api/portraits/men/1.jpg"; // Default fallback
+        
+        if (supplierUser && supplierUser.profilePic) {
+          // Check if profilePic is an object with path property
+          if (typeof supplierUser.profilePic === 'object' && supplierUser.profilePic.path) {
+            // If path starts with '/', prepend the server URL
+            if (supplierUser.profilePic.path.startsWith('/')) {
+              profilePicUrl = `http://localhost:500${supplierUser.profilePic.path}`;
+            } else if (supplierUser.profilePic.path.startsWith('http')) {
+              // If it's already a full URL, use it directly
+              profilePicUrl = supplierUser.profilePic.path;
+            }
+          } else if (typeof supplierUser.profilePic === 'string') {
+            // If profilePic is a string (direct URL), use it
+            profilePicUrl = supplierUser.profilePic;
+          }
+        } else if (supplier.sampleInput.image && supplier.sampleInput.image.name) {
+          // Fallback to input image if no profile pic is available
+          profilePicUrl = `http://localhost:500/uploads/products/${supplier.sampleInput.image.name}`;
+        }
+        
         return {
           id: index + 1,
           // Use actual supplier name from user collection if available
@@ -135,9 +157,7 @@ export const getSuppliersWithAgriInputs = async (req, res) => {
           company: supplierUser ? supplierUser.businessName : supplier._id,
           // For backward compatibility, store the email
           email: supplier._id,
-          profilePic: supplier.sampleInput.image && supplier.sampleInput.image.name 
-            ? `http://localhost:5000/uploads/${supplier.sampleInput.image.name}` 
-            : "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          profilePic: profilePicUrl,
           inputCount: supplier.count
         };
       })

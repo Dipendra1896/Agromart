@@ -32,7 +32,11 @@ const FarmerSignupForm = ({ onBack }) => {
     const file = e.target.files[0];
     setFormData({ 
       ...formData, 
-      licenseDocument: file ? file.name : '' 
+      licenseDocument: {
+        name: file ? file.name : '',
+        size: file ? file.size : '',
+        type: file ? file.type : ''
+      } 
     });
     // if (errors.licenseDocument) {
     //   setErrors({ ...errors, licenseDocument: null });
@@ -424,7 +428,7 @@ const FarmerSignupForm = ({ onBack }) => {
               }}
             >
               {formData.licenseDocument
-                ? formData.licenseDocument
+                ? formData.licenseDocument.name
                 : 'Upload license/certification'}
             </label>
            

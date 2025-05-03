@@ -108,12 +108,15 @@ function Login() {
     setIsLoading(true);
     try {
       const loginuserData = { email, password };
+
       
       const response = await authService.login(loginuserData); // Call the login API
       if (response.success === true) {
         setError("");
         setSuccess(response.message);
       
+        
+        
         // Redirect based on user type
         switch(response.userType) {
           case "buyer":
@@ -124,6 +127,9 @@ function Login() {
             break;
           case "supplier":
             navigate("/supplier-dashboard");
+            break;
+          case "admin":
+            navigate("/admin-dashboard");
             break;
           default:
             navigate("/"); // Default fallback

@@ -1,0 +1,577 @@
+/* ReceivedOrders.css - Extends OrderHistory.css with specific styles for the received orders functionality */
+
+.received-orders-overlay {
+  z-index: 1150; /* Slightly higher than order history to ensure it displays on top if needed */
+}
+
+.received-orders-container .cart-header {
+  background: linear-gradient(90deg, #16a34a, #4ade80); /* Green gradient for received orders */
+}
+
+.order-buyer-info {
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.12);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.order-buyer-info p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+  flex: 1 1 45%;
+}
+
+.order-buyer-info p strong {
+  font-weight: 600;
+  color: #1f2937;
+  margin-right: 0.5rem;
+}
+
+/* Status Actions Section */
+.status-actions {
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  background: #f9fafb;
+  border-radius: 0.8rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.status-actions h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.8rem;
+}
+
+.status-action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-btn {
+  flex: 1;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.status-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.status-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.status-btn.current {
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+/* Status-specific button colors */
+.status-btn.pending {
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+.status-btn.pending.current {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.status-btn.processing {
+  color: #f59e0b;
+  border-color: #fde68a;
+}
+
+.status-btn.processing.current {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+.status-btn.shipping {
+  color: #3b82f6;
+  border-color: #bfdbfe;
+}
+
+.status-btn.shipping.current {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.status-btn.delivered {
+  color: #10b981;
+  border-color: #a7f3d0;
+}
+
+.status-btn.delivered.current {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+/* Status description */
+.status-description {
+  margin: 1rem 0;
+  padding: 0.8rem;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.5;
+  border-left: 4px solid #9ca3af;
+}
+
+/* Media queries for responsive layout */
+@media (max-width: 640px) {
+  .status-action-buttons {
+    flex-direction: column;
+  }
+  
+  .status-btn {
+    width: 100%;
+  }
+  
+  .order-buyer-info p {
+    flex: 1 1 100%;
+  }
+}
+
+/* Order Summary inside delivery info */
+.order-delivery-info .order-summary-section {
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  background: #f9fafb;
+  border-radius: 0.8rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.order-summary-section h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.8rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.summary-row.total {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 1.1rem;
+}
+
+/* Status Message Section - now between order ID and content */
+.status-message-section {
+  padding: 1rem 1.5rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.status-message-section .delivery-estimate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+}
+
+.status-message-section .status-description {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.8rem;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.5;
+  border-left: 4px solid #9ca3af;
+}
+
+/* Order Items container with fixed height and scrolling */
+.order-items.full-width {
+  grid-column: 1 / -1; /* Span all columns */
+  margin-top: 1.5rem;
+  width: 100%;
+  max-height: 520px; /* Increased height to accommodate vertical cards */
+  overflow-y: auto !important; /* Enable vertical scrolling */
+}
+
+/* Add scrollbar styling for the order items container */
+.order-items.full-width::-webkit-scrollbar {
+  width: 8px;
+}
+
+.order-items.full-width::-webkit-scrollbar-track {
+  background-color: #f3f4f6;
+  border-radius: 8px;
+}
+
+.order-items.full-width::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 8px;
+}
+
+.order-items.full-width::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+@media (min-width: 768px) {
+  .full-width {
+    grid-column: 1 / -1 !important; /* Ensure it spans full width on larger screens */
+  }
+}
+
+/* Update modal order details layout */
+.modal-order-details {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+@media (min-width: 768px) {
+  .modal-order-details {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 2rem !important;
+  }
+}
+
+/* Simplify product cards to show essential info - vertical layout */
+.order-product {
+  display: flex !important;
+  flex-direction: column !important; /* Changed to column layout */
+  background-color: white !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s !important;
+  border: 1px solid #f3f4f6 !important;
+  height: auto !important; /* Auto height to accommodate content */
+}
+
+.order-product:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Enhanced image display for better resolution */
+.product-image {
+  width: 100% !important; /* Full width */
+  height: 270px !important; /* Increased height for better visibility */
+  overflow: hidden !important;
+  background-color: #f9fafb !important; /* Light background for transparent images */
+  position: relative !important;
+  /* top: px !important; */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.product-image img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; /* Use cover to fill the container */
+  transition: transform 0.4s ease !important;
+  image-rendering: -webkit-optimize-contrast !important; /* Improves image sharpness */
+  image-rendering: crisp-edges !important; /* For Firefox */
+  max-width: 100% !important;
+  max-height: 100% !important;
+  padding: 0 !important; /* Remove padding to allow full coverage */
+}
+
+.order-product:hover .product-image img {
+  transform: scale(1.05) !important; /* Slightly magnify on hover */
+}
+
+.product-info {
+  padding: 1rem !important;
+  flex-grow: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  min-height: 120px !important;
+  /* font-size: 10px !important; */
+}
+
+.product-info h5 {
+  font-weight: 600 !important;
+  margin-bottom: 0.75rem !important;
+  font-size: 1rem !important;
+  color: #1f2937 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.product-info p {
+  margin: 0.25rem 0 !important;
+  /* font-size: 0.85rem !important; */
+  color: #6b7280 !important;
+}
+
+.order-type-badge {
+  font-size: 0.85rem !important;
+  color: #6b7280 !important;
+  background-color: #f3f4f6 !important;
+  border-radius: 0.5rem !important;
+  padding: 0.25rem 0.5rem !important;
+  /* margin-bottom: 0.5rem !important; */
+  position: absolute;
+  top: 14rem;
+  /* right: 0.5rem; */
+}
+
+.product-info .subtotal {
+  margin-top: auto !important;
+  padding-top: 0.5rem !important;
+  font-weight: 600 !important;
+  color: #16a34a !important;
+  font-size: 0.95rem !important;
+  border-top: 1px dashed #e5e7eb !important;
+}
+
+/* Scroll indicator styling */
+.scroll-indicator {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: normal;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+}
+
+
+/* Update product grid for vertical cards */
+.product-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 1rem !important;
+  width: 100% !important;
+  /* padding: 0.5rem !important; */
+}
+
+@media (min-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Improve buyer and delivery information display */
+.order-delivery-info {
+  padding: 1.5rem !important;
+  background-color: #f9fafb !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid #f3f4f6 !important;
+}
+
+.order-delivery-info h4 {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  margin-bottom: 1.25rem !important;
+  padding-bottom: 0.75rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Better alignment for buyer information details */
+.order-delivery-info p {
+  display: flex !important;
+  align-items: flex-start !important;
+  margin: 0.75rem 0 !important;
+  font-size: 0.95rem !important;
+  color: #4b5563 !important;
+  line-height: 1.5 !important;
+}
+
+.info-icon {
+  color: #6b7280 !important;
+  margin-top: 0.25rem !important;
+  margin-right: 0.75rem !important;
+  min-width: 16px !important;
+  font-size: 1rem !important;
+}
+
+.order-delivery-info p strong {
+  display: inline-block !important;
+  width: 130px !important; /* Fixed width for parameter names */
+  font-weight: 600 !important;
+  color: #374151 !important;
+}
+
+/* Style for parameter values */
+.order-delivery-info p span {
+  flex: 1 !important;
+  display: block !important;
+  color: #111827 !important;
+  word-break: break-word !important;
+}
+
+/* Fix back button to appear on a single line */
+.back-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  background: none !important;
+  border: none !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 0.5rem !important;
+  cursor: pointer !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  color: #4b5563 !important;
+  transition: all 0.2s !important;
+  white-space: nowrap !important; /* Prevent wrapping */
+  min-width: max-content !important;
+}
+
+.back-btn:hover {
+  background-color: #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+/* Modal Header Styling */
+.modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 1rem 1.5rem !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  background-color: #ffffff !important;
+  flex-wrap: nowrap !important; /* Prevent wrapping */
+}
+
+/* Order ID styling for single line display */
+.order-id h3 {
+  margin: 0;
+  padding-right: 1rem;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.order-id .flex {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.order-status {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Status Timestamps Styling */
+.status-timestamps {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border-left: 4px solid #4b5563;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.status-timestamps h5 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  color: #4b5563;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.timestamp-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px dashed #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.timestamp-row:last-child {
+  border-bottom: none;
+}
+
+.timestamp-row:hover {
+  background-color: #f3f4f6;
+}
+
+.timestamp-status {
+  font-weight: 500;
+  color: #4b5563;
+  flex: 0 0 30%;
+}
+
+.timestamp-time {
+  color: #1f2937;
+  flex: 0 0 70%;
+  text-align: right;
+}
+
+/* Status-specific styling */
+.timestamp-row:nth-child(2) .timestamp-status {
+  color: #6b7280; /* Pending */
+}
+
+.timestamp-row:nth-child(3) .timestamp-status {
+  color: #f59e0b; /* Processing */
+}
+
+.timestamp-row:nth-child(4) .timestamp-status {
+  color: #3b82f6; /* Shipping */
+}
+
+.timestamp-row:nth-child(5) .timestamp-status {
+  color: #10b981; /* Delivered */
+}
+
+/* Status data missing alert */
+.timestamp-missing {
+  color: #ef4444 !important;
+  font-style: italic;
+}
+
+/* Not yet indicator */
+.timestamp-not-yet {
+  color: #9ca3af !important;
+  font-style: italic;
+} 

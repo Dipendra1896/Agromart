@@ -44,6 +44,17 @@ const orderSchema = new mongoose.Schema({
     enum: ['Pending', 'Processing', 'Shipping', 'Delivered'],
     default: 'Pending',
   },
+  // Store status change timestamps
+  statusTimes: {
+    type: Map,
+    of: Date,
+    default: function() {
+      // Initialize with the current time for Pending status
+      const times = new Map();
+      times.set('Pending', this.date || new Date());
+      return times;
+    }
+  },
   buyerEmail: {
     type: String,
     required: true,

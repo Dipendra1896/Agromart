@@ -557,47 +557,63 @@
 .history-dropdown-item {
   display: flex;
   align-items: center;
-  /* padding: 0.85rem 1rem; More vertical padding */
-  color: #15352a; 
-  font-weight: 600;
-  letter-spacing: 0.5px; /* Slightly more spacing between letters */
   background: none;
   border: none;
   width: 100%;
   text-align: left;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
+  padding: 0.8rem 1rem;
+  color: #374151;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  /* border-left: 5px solid transparent;  */
-  /* border-bottom: 1px solid #dcfce7;  */
+  transition: all 0.2s ease-in-out;
+  border-radius: 4px;
+  margin-bottom: 4px;
 }
 
-/* Make the last item not have a bottom border */
 .history-dropdown-item:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .history-dropdown-item:focus{
-  border: none;
   outline: none;
 }
-/* Enhanced hover state */
+
 .history-dropdown-item:hover {
-  background-color: #4ade80; /* Light green background on hover */
-  color: #15352a; /* Dark green text on hover for contrast */
-  /* border-left: 5px solid #15352a; */
+  background-color: #f9fafb;
+  color: #15803d;
+  transform: translateX(3px);
 }
 
-/* Icon should also match green theme */
+/* Specific styling for received orders button */
+.history-dropdown-item:nth-child(2) {
+  border-left: 3px solid transparent;
+}
+
+.history-dropdown-item:nth-child(2):hover {
+  border-left-color: #15803d;
+  background-color: #ecfdf5;
+}
+
 .dropdown-icon {
-  margin-right: 0.75rem;
-  font-size: 1.1rem; /* Slightly larger icons */
-  color: #4ade80; /* Light green icon color */
+  margin-right: 10px;
+  font-size: 1.1rem;
+  color: #6b7280;
+  transition: all 0.2s ease-in-out;
 }
 
-/* Icon should also change color on hover */
 .history-dropdown-item:hover .dropdown-icon {
-  color: #15352a; 
+  color: #15803d;
+  transform: scale(1.2);
+}
+
+/* Box icon specific styling */
+.dropdown-icon.fa-box {
+  color: #16a34a;
+}
+
+.history-dropdown-item:hover .dropdown-icon.fa-box {
+  color: #15803d;
 }
 
 /* Position the dropdown properly for the orders container */

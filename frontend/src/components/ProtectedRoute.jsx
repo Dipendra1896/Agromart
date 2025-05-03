@@ -33,7 +33,7 @@ const ProtectedRoute = ({ element, requiredRole }) => {
       const parsedUserData = JSON.parse(userData);
       
       // Directly check if user exists
-      const response = await axios.post('http://localhost:5000/api/auth/check-user-exists', {
+      const response = await axios.post('http://localhost:500/api/auth/check-user-exists', {
         email: parsedUserData.email,
         userType: userType
       });
@@ -123,6 +123,8 @@ const ProtectedRoute = ({ element, requiredRole }) => {
         return <Navigate to="/farmer-dashboard" />;
       case 'supplier':
         return <Navigate to="/supplier-dashboard" />;
+      case 'admin':
+        return <Navigate to="/admin-dashboard" />;
       default:
         return <Navigate to="/" />;
     }

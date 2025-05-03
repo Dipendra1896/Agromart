@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     resetOtp: {type: String, default: ''},
     resetOtpExpiresAt: {type: Number, default: 0},
 
-    userType: {type: String, enum: ['buyer', 'farmer', 'supplier'], required: true},
+    userType: {type: String, enum: ['buyer', 'farmer', 'supplier', 'admin'], required: true},
     profilePic: {
         type: Object,
         // default: null,
@@ -50,17 +50,22 @@ const userSchema = new mongoose.Schema({
     
     // Document references - file paths to uploaded documents
     licenseDocument: {
-        type: String, 
+        type: Object, 
         required: function() { return this.userType === 'farmer'; }
     },
     businessCertificate: {
-        type: String, 
+        type: Object, 
         required: function() { return this.userType === 'supplier'; }
     },
 
+    // Document approval status
+    documentApproval: {
+        type: Boolean,
+        default: false
+    }
    
    
-});
+}, { timestamps: true });
 
 const userModel = mongoose.models.user || mongoose.model('user', userSchema);
 

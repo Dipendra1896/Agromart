@@ -10,9 +10,12 @@ import ProductForm from './ProductForm'
 import FarmerFooter from './FarmerFooter'
 import CartSection from './CartSection'
 import OrderHistory from './OrderHistory'
+import ReceivedOrders from './ReceivedOrders'
 import TransactionHistory from './TransactionHistory'
 import AgriInputsDetailPopup from './AgriInputsDetailPopup'
 import authService from '../api'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 function FarmerDashboard() {
   const [showProductForm, setShowProductForm] = useState(false)
@@ -20,11 +23,33 @@ function FarmerDashboard() {
   const [showCart, setShowCart] = useState(false);
   const [orders, setOrders] = useState([]);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [showReceivedOrders, setShowReceivedOrders] = useState(false);
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+  const [documentApproved, setDocumentApproved] = useState(false);
   
   // States for agri-input popup
   const [selectedAgriInput, setSelectedAgriInput] = useState(null);
   const [showAgriInputDetail, setShowAgriInputDetail] = useState(false);
+
+  // Check document approval status
+  useEffect(() => {
+    const checkDocumentApproval = () => {
+      try {
+        // Get user data from localStorage
+        const userData = localStorage.getItem('userData');
+        if (userData) {
+          const user = JSON.parse(userData);
+          if (user && user.documentApproval !== false) {
+            setDocumentApproved(user.documentApproval);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking document approval:', error);
+      }
+    };
+    
+    checkDocumentApproval();
+  }, []);
 
   // Load orders from localStorage on component mount
   useEffect(() => {
@@ -102,7 +127,20 @@ function FarmerDashboard() {
   }, []);
 
   const toggleProductForm = () => {
-    setShowProductForm(!showProductForm)
+    if (!documentApproved) {
+      toast.warning('Your document is awaiting approval from admin. You cannot add products until your document is approved.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        icon: "🔒"
+      });
+      return;
+    }
+    setShowProductForm(!showProductForm);
   }
 
   // Handle agri-input buy click
@@ -280,14 +318,23 @@ function FarmerDashboard() {
 
   const toggleOrderHistory = () => {
     setShowOrderHistory(!showOrderHistory);
-    // Close transaction history if it's open
+    // Close other panels if they're open
+    if (showReceivedOrders) setShowReceivedOrders(false);
+    if (showTransactionHistory) setShowTransactionHistory(false);
+  };
+
+  const toggleReceivedOrders = () => {
+    setShowReceivedOrders(!showReceivedOrders);
+    // Close other panels if they're open
+    if (showOrderHistory) setShowOrderHistory(false);
     if (showTransactionHistory) setShowTransactionHistory(false);
   };
 
   const toggleTransactionHistory = () => {
     setShowTransactionHistory(!showTransactionHistory);
-    // Close order history if it's open
+    // Close other panels if they're open
     if (showOrderHistory) setShowOrderHistory(false);
+    if (showReceivedOrders) setShowReceivedOrders(false);
   };
 
   const handleOrderPlacement = async (orderDetails) => {
@@ -516,65 +563,85 @@ function FarmerDashboard() {
   return (
     <div className="farmer-dashboard">
       <Navbar 
-        onAddProductClick={toggleProductForm} 
-        onAddAgriInputsClick={null}
-        showAgriInputs={true} 
-        toggleCart={toggleCart}
+        toggleCart={toggleCart} 
         cartItemsCount={cart.length}
+        onAddProductClick={toggleProductForm}
+        onAddAgriInputsClick={null}
         onViewOrders={toggleOrderHistory}
+        onViewReceivedOrders={toggleReceivedOrders}
         ordersCount={orders.length}
         onViewTransactions={toggleTransactionHistory}
+        userType="farmer"
       />
       
       <main className="dashboard-content">
         <HeroSection />
         <ExperienceSection />
-        <FarmerProductSection dashboardType="farmer" />
+        
+        {/* Farmer's Products Section */}
+        <FarmerProductSection
+          onAddProductClick={toggleProductForm}
+          documentApproved={documentApproved}
+        />
+        
+        {/* Suppliers Section */}
         <SuppliersSection onBuyClick={handleAgriInputBuyClick} />
+        
+        {/* Product Form Overlay */}
+        {showProductForm && (
+          <ProductForm onClose={() => setShowProductForm(false)} />
+        )}
+        
+        {/* Cart Section as overlay */}
+        {showCart && (
+          <CartSection 
+            isOpen={true}
+            cartItems={cart} 
+            onClose={() => setShowCart(false)} 
+            onRemoveFromCart={handleRemoveFromCart}
+            onPlaceOrder={handleOrderPlacement}
+            onUpdateQuantity={handleUpdateQuantity}
+            userType="farmer"
+          />
+        )}
+        
+        {/* Order History as overlay */}
+        {showOrderHistory && (
+          <OrderHistory 
+            onClose={() => setShowOrderHistory(false)}
+            onOrderDelete={handleOrderDelete}
+            userType="farmer"
+          />
+        )}
+        
+        {/* Received Orders as overlay */}
+        {showReceivedOrders && (
+          <ReceivedOrders 
+            onClose={() => setShowReceivedOrders(false)}
+          />
+        )}
+        
+        {/* Transaction History as overlay */}
+        {showTransactionHistory && (
+          <TransactionHistory 
+            onClose={() => setShowTransactionHistory(false)}
+          />
+        )}
+        
+        {/* Agri-Input Detail Popup */}
+        {showAgriInputDetail && selectedAgriInput && (
+          <AgriInputsDetailPopup 
+            product={selectedAgriInput}
+            onAddToCart={handleAddAgriInputToCart}
+            onClose={() => setShowAgriInputDetail(false)}
+          />
+        )}
+
+        {/* Toast Container for notifications */}
+        <ToastContainer />
       </main>
       
       <FarmerFooter />
-      
-      {/* Render ProductForm as an overlay */}
-      {showProductForm && <ProductForm onClose={() => setShowProductForm(false)} />}
-      
-      {/* Cart Section as overlay */}
-      {showCart && (
-        <CartSection 
-          isOpen={true}
-          cartItems={cart} 
-          onClose={() => setShowCart(false)} 
-          onRemoveFromCart={handleRemoveFromCart}
-          onPlaceOrder={handleOrderPlacement}
-          onUpdateQuantity={handleUpdateQuantity}
-          userType="farmer"
-        />
-      )}
-      
-      {/* Order History as overlay */}
-      {showOrderHistory && (
-        <OrderHistory 
-          onClose={() => setShowOrderHistory(false)}
-          onOrderDelete={handleOrderDelete}
-          userType="farmer"
-        />
-      )}
-      
-      {/* Transaction History as overlay */}
-      {showTransactionHistory && (
-        <TransactionHistory 
-          onClose={() => setShowTransactionHistory(false)}
-        />
-      )}
-      
-      {/* Agri-Input Detail Popup */}
-      {showAgriInputDetail && selectedAgriInput && (
-        <AgriInputsDetailPopup 
-          product={selectedAgriInput}
-          onAddToCart={handleAddAgriInputToCart}
-          onClose={() => setShowAgriInputDetail(false)}
-        />
-      )}
     </div>
   )
 }

@@ -1,10 +1,8 @@
 import User from '../models/userModel.js';
-// import Buyer from '../models/buyerModel.js';
-// import Farmer from '../models/farmerModel.js';
-// import Supplier from '../models/supplierModel.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 
 // Get current file and directory name
 const __filename = fileURLToPath(import.meta.url);
@@ -70,7 +68,7 @@ export const updateUserProfile = async (req, res) => {
   try {
     console.log("===============================================");
     console.log("Update profile request received with body:", JSON.stringify(req.body, null, 2));
-    console.log("Update profile files:", req.files ? Object.keys(req.files) : "No files");
+    console.log("Update profile file:", req.file ? req.file.filename : "No file");
     console.log("Update profile query params:", req.query);
     console.log("Content type:", req.headers['content-type']);
     
@@ -129,37 +127,38 @@ export const updateUserProfile = async (req, res) => {
     // Handle profile picture upload
     let profilePicObj = user.profilePic; // Keep existing profilePic if no new upload
     
-    if (req.files && req.files.profilePic) {
-      const profilePic = req.files.profilePic;
-      
-      // Generate a unique filename
-      const timestamp = Date.now();
-      const fileName = `profile_${email.replace('@', '_')}_${timestamp}${path.extname(profilePic.name)}`;
-      
-      // Create uploads directory if it doesn't exist
-      const uploadDir = path.join(__dirname, '..', 'uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      
-      // Move the file to uploads directory
-      const uploadPath = path.join(uploadDir, fileName);
-      await profilePic.mv(uploadPath);
+    // Handle file upload with multer
+    if (req.file) {
+      console.log("Processing uploaded profile picture:", req.file);
       
       // Delete the old profile pic file if it exists
       if (user.profilePic && user.profilePic.path) {
-        const oldProfilePicPath = path.join(uploadDir, path.basename(user.profilePic.path));
-        if (fs.existsSync(oldProfilePicPath)) {
-          fs.unlinkSync(oldProfilePicPath);
+        try {
+          const oldPath = user.profilePic.path;
+          const absoluteOldPath = oldPath.startsWith('/') 
+            ? path.join(__dirname, '..', '..', oldPath.substring(1)) 
+            : path.join(__dirname, '..', '..', oldPath);
+          
+          console.log("Checking for old profile picture at:", absoluteOldPath);
+          if (fs.existsSync(absoluteOldPath)) {
+            fs.unlinkSync(absoluteOldPath);
+            console.log("Deleted old profile picture:", absoluteOldPath);
+          }
+        } catch (deleteError) {
+          console.warn("Error deleting old profile picture:", deleteError);
+          // Continue anyway - non-critical error
         }
       }
       
-      // Create profile pic object with all required properties
+      // Create relative path for the database
+      const relativePath = `/uploads/profiles/${req.file.filename}`;
+      
+      // Create profile pic object for database
       profilePicObj = {
-        name: profilePic.name,
-        path: `/uploads/${fileName}`, // Store the relative path for easier access
-        type: profilePic.mimetype,
-        size: profilePic.size
+        name: req.file.originalname,
+        path: relativePath,
+        type: req.file.mimetype,
+        size: req.file.size
       };
       
       console.log("New profile image object:", profilePicObj);
@@ -195,7 +194,12 @@ export const updateUserProfile = async (req, res) => {
       gender: user.gender,
       phoneNumber: user.phoneNumber,
       userType: user.userType,
-      profilePic: user.profilePic
+      profilePic: user.profilePic,
+      // Include user type specific fields
+      farmName: user.farmName,
+      farmLocation: user.farmLocation,
+      businessName: user.businessName,
+      businessAddress: user.businessAddress
     };
     
     console.log("Sending back updated profile to client");
@@ -214,4 +218,4 @@ export const updateUserProfile = async (req, res) => {
       message: error.message || "Server error"
     });
   }
-}; 
+};

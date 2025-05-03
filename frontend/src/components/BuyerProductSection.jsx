@@ -113,7 +113,7 @@ const BuyerProductSection = ({ dashboardType = 'farmer', farmerName, onBackClick
     // If image is stored with path and name (our new multer implementation)
     if (product.image.path && product.image.name) {
       return <img 
-        src={`http://localhost:5000/uploads/${product.image.name}`} 
+        src={`http://localhost:500/uploads/products/${product.image.name}`} 
         alt={product.name} 
         onError={(e) => {
           e.target.onerror = null;
@@ -254,6 +254,7 @@ const BuyerProductSection = ({ dashboardType = 'farmer', farmerName, onBackClick
                     <p>Quantity: {product.quantity} {product.unit}</p>
                     {isBuyer ? (
                       <button 
+                        
                         className="buy-btn" 
                         onClick={() => handleBuyClick(product)}
                       >

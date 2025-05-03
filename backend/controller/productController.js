@@ -1,6 +1,7 @@
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
 
+
 // Add product
 export const addProduct = async (req, res) => {
   try {
@@ -19,23 +20,23 @@ export const addProduct = async (req, res) => {
       return res.json({ success: false, message: "Description must be less than 100 characters" });
     }
 
-    // Check if file was uploaded
+    // Check if file was uploaded via multer
     if (!req.file) {
       return res.json({ success: false, message: "Product image is required" });
     }
-
-    // Create image object with file details
+    
+    // Create image object with file details from multer
     const image = {
       name: req.file.filename,
       path: req.file.path,
       type: req.file.mimetype,
       size: req.file.size
     };
-
+    
     if (image.size > 1024 * 1024 * 2) {
       return res.json({ success: false, message: "Product image must be less than 2MB" });
     }
-
+    
     // Create new product
     const newProduct = new Product({
       name,
@@ -57,6 +58,7 @@ export const addProduct = async (req, res) => {
     });
     
   } catch (error) {
+    console.error("Error adding product:", error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -122,6 +124,28 @@ export const getFarmersWithProducts = async (req, res) => {
           userType: 'farmer' 
         });
         
+        // Determine the profile picture URL
+        let profilePicUrl = "https://randomuser.me/api/portraits/men/1.jpg"; // Default fallback
+        
+        if (farmerUser && farmerUser.profilePic) {
+          // Check if profilePic is an object with path property
+          if (typeof farmerUser.profilePic === 'object' && farmerUser.profilePic.path) {
+            // If path starts with '/', prepend the server URL
+            if (farmerUser.profilePic.path.startsWith('/')) {
+              profilePicUrl = `http://localhost:500${farmerUser.profilePic.path}`;
+            } else if (farmerUser.profilePic.path.startsWith('http')) {
+              // If it's already a full URL, use it directly
+              profilePicUrl = farmerUser.profilePic.path;
+            }
+          } else if (typeof farmerUser.profilePic === 'string') {
+            // If profilePic is a string (direct URL), use it
+            profilePicUrl = farmerUser.profilePic;
+          }
+        } else if (farmer.sampleProduct.image && farmer.sampleProduct.image.name) {
+          // Fallback to product image if no profile pic is available
+          profilePicUrl = `http://localhost:500/uploads/products/${farmer.sampleProduct.image.name}`;
+        }
+        
         return {
           id: index + 1,
           // Use actual farmer name from user collection if available
@@ -132,9 +156,7 @@ export const getFarmersWithProducts = async (req, res) => {
           company: farmerUser ? farmerUser.farmName : farmer._id,
           // For backward compatibility, store the email in company field
           email: farmer._id,
-          profilePic: farmer.sampleProduct.image && farmer.sampleProduct.image.name 
-            ? `http://localhost:5000/uploads/${farmer.sampleProduct.image.name}` 
-            : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          profilePic: profilePicUrl,
           productCount: farmer.count
         };
       })

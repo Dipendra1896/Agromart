@@ -58,6 +58,9 @@ const OrderHistory = ({ onClose, onOrderDelete, userType = 'buyer' }) => {
         } else if (userType === 'buyer') {
           // Fetch orders where buyer is buying products
           response = await authService.getOrdersByBuyerEmail(userEmail);
+        } else if (userType === 'supplier') {
+          // Fetch orders where supplier is the seller of agri-inputs
+          response = await authService.getOrdersBySellerEmail(userEmail);
         }
         
         if (response && response.success) {
@@ -101,8 +104,21 @@ const OrderHistory = ({ onClose, onOrderDelete, userType = 'buyer' }) => {
 
   // Format date to readable format
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    if (!dateString) return 'Date unavailable';
+    
+    try {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      
+      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return date.toLocaleDateString(undefined, options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Date error';
+    }
   };
 
   // Open order details modal
@@ -171,19 +187,22 @@ const OrderHistory = ({ onClose, onOrderDelete, userType = 'buyer' }) => {
 
   // Get delivery date estimate based on status
   const getDeliveryEstimate = (order) => {
-    const orderDate = new Date(order.date);
+    // For Pending status, use createdAt (or date as fallback)
+    // For other statuses (Processing, Shipping, Delivered), use updatedAt timestamp
+    const orderDate = new Date(order.createdAt || order.date);
+    const updatedDate = order.updatedAt ? new Date(order.updatedAt) : orderDate;
     let estimatedDate;
     
     switch(order.status) {
       case 'Delivered':
-        return 'Delivered on ' + formatDate(order.date);
+        return 'Delivered on ' + formatDate(updatedDate);
       case 'Shipping':
-        estimatedDate = new Date(orderDate);
-        estimatedDate.setDate(orderDate.getDate() + 2);
+        estimatedDate = new Date(updatedDate);
+        estimatedDate.setDate(updatedDate.getDate() + 2);
         return 'Estimated delivery on ' + formatDate(estimatedDate);
       case 'Processing':
-        estimatedDate = new Date(orderDate);
-        estimatedDate.setDate(orderDate.getDate() + 4);
+        estimatedDate = new Date(updatedDate);
+        estimatedDate.setDate(updatedDate.getDate() + 4);
         return 'Estimated delivery on ' + formatDate(estimatedDate);
       case 'Pending':
       default:
@@ -273,14 +292,24 @@ const OrderHistory = ({ onClose, onOrderDelete, userType = 'buyer' }) => {
 
   // Get the appropriate title based on userType
   const getOrderHistoryTitle = () => {
-    return userType === 'farmer' ? 'Your Agri-Input Orders' : 'Your Order History';
+    if (userType === 'farmer') {
+      return 'Your Agri-Input Orders';
+    } else if (userType === 'supplier') {
+      return 'Received Agri-Input Orders';
+    } else {
+      return 'Your Order History';
+    }
   };
 
   // Get the empty message based on userType
   const getEmptyOrdersMessage = () => {
-    return userType === 'farmer' 
-      ? "You haven't placed any orders for agricultural inputs yet. Start exploring available supplies!" 
-      : "You haven't placed any orders yet. Start exploring our products!";
+    if (userType === 'farmer') {
+      return "You haven't placed any orders for agricultural inputs yet. Start exploring available supplies!";
+    } else if (userType === 'supplier') {
+      return "You haven't received any orders for your agricultural inputs yet. Once buyers place orders, they will appear here.";
+    } else {
+      return "You haven't placed any orders yet. Start exploring our products!";
+    }
   };
 
   // Get order type display text
@@ -421,7 +450,9 @@ const OrderHistory = ({ onClose, onOrderDelete, userType = 'buyer' }) => {
                             <div className="order-meta">
                               <div className="order-date">
                                 <FaCalendarAlt className="meta-icon" />
-                                {formatDate(order.date)}
+                                {order.status === 'Pending' 
+                                  ? formatDate(order.createdAt || order.date)
+                                  : formatDate(order.updatedAt || order.date)}
                               </div>
                               <div className={`order-type-badge ${order.orderType === 'agriinput' ? 'agri-input' : 'product'}`}>
                                 {order.orderType === 'agriinput' ? 'Agri-Input' : 'Product'}
@@ -496,7 +527,11 @@ const OrderHistory = ({ onClose, onOrderDelete, userType = 'buyer' }) => {
                 
                   <div className="modal-order-id">
                     <h2>Order #{getOrderDisplayId(selectedOrder)}</h2>
-                    <p className="modal-date">{formatDate(selectedOrder.date)}</p>
+                    <p className="modal-date">
+                      {selectedOrder.status === 'Pending' 
+                        ? formatDate(selectedOrder.createdAt || selectedOrder.date)
+                        : formatDate(selectedOrder.updatedAt || selectedOrder.date)}
+                    </p>
                   </div>
                   
                   <div className="modal-content-wrapper">
@@ -550,7 +585,7 @@ const OrderHistory = ({ onClose, onOrderDelete, userType = 'buyer' }) => {
                               <div className="product-image">
                                 {item.image && item.image.name ? (
                                   <img 
-                                    src={`http://localhost:5000/uploads/${item.image.name}`}
+                                    src={`http://localhost:500/uploads/products/${item.image.name}`}
                                     alt={item.name}
                                     onError={(e) => {
                                       e.target.onerror = null;

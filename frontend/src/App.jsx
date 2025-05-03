@@ -13,13 +13,15 @@ import logo from "./assets/Logo AgroMart.png";
 import FarmerDashboard from "./components/FarmerDashboard";
 import SupplierDashboard from "./components/SupplierDashboard";
 import BuyerDashboard from "./components/BuyerDashboard";
+import AdminDashboard from "./components/admin/AdminDashboard";
 import EsewaSuccess from "./components/EsewaSuccess";
 import EsewaFailure from "./components/EsewaFailure";
 // import Footer from "./components/Footer";
 import { FaBars, FaTimes } from 'react-icons/fa';
 import SignupModal from "./components/signup/SignupModal";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ProfileFormTest from "./components/ProfileFormTest";
+// import ProfileFormTest from "./components/ProfileFormTest";
+// import TestProfileUpdate from "./components/TestProfileUpdate";
 // import './styles/Footer.css';
 // import ProductForm from "./components/ProductForm";
 // import Navbar from "./components/navbar";
@@ -153,8 +155,22 @@ function App() {
         } 
       />
 
+      {/* Protected Admin Dashboard Route */}
+      <Route 
+        path="/admin-dashboard" 
+        element={
+          <ProtectedRoute
+            element={<AdminDashboard />}
+            requiredRole="admin"
+          />
+        }
+      />
+
       {/* Test route for profile form */}
-      <Route path="/test-profile-form" element={<ProfileFormTest />} />
+      {/* <Route path="/test-profile-form" element={<ProfileFormTest />} /> */}
+      
+      {/* Test route for profile update */}
+      {/* <Route path="/test-profile-update" element={<TestProfileUpdate />} /> */}
       
       {/* eSewa Payment Success/Failure Routes */}
       <Route path="/esewa-success" element={<EsewaSuccess />} />

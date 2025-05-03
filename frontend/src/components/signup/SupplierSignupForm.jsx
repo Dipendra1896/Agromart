@@ -34,7 +34,11 @@ const SupplierSignupForm = ({ onBack }) => {
     
       setFormData({
         ...formData,
-        businessCertificate: file ? file.name : ''
+        businessCertificate: {
+          name: file ? file.name : '',
+          size: file ? file.size : '',
+          type: file ? file.type : ''
+        }
       });
       
      
@@ -448,7 +452,7 @@ const SupplierSignupForm = ({ onBack }) => {
               }}
             >
               {formData.businessCertificate
-                ? formData.businessCertificate
+                ? formData.businessCertificate.name
                 : 'Upload business certification'}
             </label>
           

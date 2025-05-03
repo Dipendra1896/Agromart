@@ -4,9 +4,7 @@ import jwt from "jsonwebtoken";
 import validator from "validator";
 import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
-// import dotenv from "dotenv";
 
-// dotenv.config();
 
 
 
@@ -90,10 +88,13 @@ export const registerBuyer = async (req, res) => {
        `,
    };
 
-
-    res.json({ success: true, message: "Registration successfull.\n Verification link is sent to your email." });
-
-    await transporter.sendMail(emailData);
+    try {
+      await transporter.sendMail(emailData);
+      res.json({ success: true, message: "Registration successfull.\n Verification link is sent to your email." });
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      res.json({ success: true, message: "Registration successful, but there was an error sending the verification email." });
+    }
     
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -103,33 +104,49 @@ export const registerBuyer = async (req, res) => {
 
 //farmer registration
 export const registerFarmer = async (req, res) => {
-  const { name, email, password, farmName, farmLocation, phoneNumber, licenseDocument } = req.body;
-  
 
+  const { name, email, password, farmName, farmLocation, phoneNumber } = req.body;
   
-
-  if (!name || !email || !password || !farmName || !farmLocation || !phoneNumber || !licenseDocument) {
+  // Check if the required fields are provided
+  if (!name || !email || !password || !farmName || !farmLocation || !phoneNumber) {
     return res.json({ success: false, message: "Please fill in all required fields" });
   }
-
-
+  
 
   if (!validator.isEmail(email)) {
     return res.json({ success: false, message: "Invalid email" });
   }
 
-  //strong password validation include uppercase, lowercase, special character and number
+  // Strong password validation including uppercase, lowercase, special character and number
   if (!validator.isStrongPassword(password)) {
     return res.json({ success: false, message: "Password must be strong" });
   }
-     
+
+  if (!req.file) {
+    return res.json({ success: false, message: "License document is required" });
+  }
+
   try {
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
       return res.json({ success: false, message: "User already exists" });
     }
- 
+    
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
+   
+    // Create a document object with file details
+    const licenseDocument = {
+      name: req.file.filename,
+      path: req.file.path,
+      type: req.file.mimetype,
+      size: req.file.size
+    };
+
+    if(licenseDocument.size > 1024 * 1024 * 5){
+      return res.json({success: false, message: 'License document must be less than 5MB'});
+    }
 
     const user = new userModel({ 
       name, 
@@ -179,9 +196,13 @@ export const registerFarmer = async (req, res) => {
       `,
     };
 
-    res.json({ success: true, message: "Farmer registration successful.\n Verification link is sent to your email." });
-
-    await transporter.sendMail(emailData);
+    try {
+      await transporter.sendMail(emailData);
+      res.json({ success: true, message: "Farmer registration successful.\n Verification link is sent to your email." });
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      res.json({ success: true, message: "Farmer registration successful, but there was an error sending the verification email." });
+    }
     
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -191,25 +212,23 @@ export const registerFarmer = async (req, res) => {
 
 //supplier registration
 export const registerSupplier = async (req, res) => {
-  const { name, email, password, businessName, businessAddress, phoneNumber, businessCertificate } = req.body;
-  // let businessCertificate = '';
+  const { name, email, password, businessName, businessAddress, phoneNumber } = req.body;
   
-  // Get file path if a file was uploaded
-  // if (req.file) {
-  //   businessCertificate = req.file.path;
-  // } else {
-  //   return res.json({ success: false, message: "Business certificate is required" });
-  // }
-
-  if (!name || !email || !password || !businessName || !businessAddress || !phoneNumber || !businessCertificate) {
+  // Check if the required fields are provided
+  if (!name || !email || !password || !businessName || !businessAddress || !phoneNumber) {
     return res.json({ success: false, message: "Please fill in all required fields" });
+  }
+  
+  // Verify that a business certificate was uploaded
+  if (!req.file) {
+    return res.json({ success: false, message: "Business certificate is required" });
   }
 
   if (!validator.isEmail(email)) {
     return res.json({ success: false, message: "Invalid email" });
   }
 
-  //strong password validation include uppercase, lowercase, special character and number
+  // Strong password validation including uppercase, lowercase, special character and number
   if (!validator.isStrongPassword(password)) {
     return res.json({ success: false, message: "Password must be strong" });
   }
@@ -221,6 +240,18 @@ export const registerSupplier = async (req, res) => {
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create a document object with file details
+    const businessCertificate = {
+      name: req.file.filename,
+      path: req.file.path,
+      type: req.file.mimetype,
+      size: req.file.size
+    };
+
+    if(businessCertificate.size > 1024 * 1024 * 2){
+      return res.json({success: false, message: 'Business certificate must be less than 2MB'});
+    }
 
     const user = new userModel({ 
       name, 
@@ -265,14 +296,18 @@ export const registerSupplier = async (req, res) => {
           <p>This link will expire in 24 hours.</p>
           <br />
           <p>If you have any questions, feel free to reach out to us at agromart@gmail.com</p>
-          <p>Happy business,</p>
+          <p>Happy serving,</p>
           <p><strong>The Agro-Mart Team</strong></p>
       `,
     };
 
-    res.json({ success: true, message: "Supplier registration successful.\n Verification link is sent to your email." });
-
-    await transporter.sendMail(emailData);
+    try {
+      await transporter.sendMail(emailData);
+      res.json({ success: true, message: "Supplier registration successful.\n Verification link is sent to your email." });
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      res.json({ success: true, message: "Supplier registration successful, but there was an error sending the verification email." });
+    }
     
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -339,6 +374,7 @@ export const login = async (req, res) => {
         businessAddress: user.businessAddress,
         licenseDocument: user.licenseDocument,
         businessCertificate: user.businessCertificate,
+        documentApproval: user.documentApproval,
         
         // Add any other user fields you want to access
       }

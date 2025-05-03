@@ -1,10 +1,11 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/auth"; // Replace with your backend URL
+const API_URL = "http://localhost:500/api/auth"; // Replace with your backend URL
 // const AGRI_INPUT_URL = "http://localhost:5000/api/agri-inputs"; // URL for agri-inputs endpoints
-const API_URL_AGRI_INPUT = "http://localhost:5000/api/agri-inputs";
-const API_URL_PRODUCT = "http://localhost:5000/api/products";
-const API_URL_ORDER = "http://localhost:5000/api/orders";
+const API_URL_AGRI_INPUT = "http://localhost:500/api/agri-inputs";
+const API_URL_PRODUCT = "http://localhost:500/api/products";
+const API_URL_ORDER = "http://localhost:500/api/orders";
+const API_URL_ADMIN = "http://localhost:500/api/admin";
 
 // Register buyer
 const registerBuyer = async (userData) => {
@@ -14,13 +15,57 @@ const registerBuyer = async (userData) => {
 
 // Register farmer with file upload
 const registerFarmer = async (userData) => {
-  const response = await axios.post(`${API_URL}/register-farmer`, userData);
-  return response.data;
+    const formData = new FormData();
+    
+    // // Extract image file from the saved file input
+    const licenseDocument = document.getElementById('licenseDocument').files[0];
+    
+    // // Add all other form fields to FormData
+      Object.keys(userData).forEach(key => {
+        if (key !== 'licenseDocument') { // Skip the image object, we'll add the file directly
+          formData.append(key, userData[key]);
+        }
+      });
+    
+    // // Append the image file with the field name matching the multer middleware
+    if (licenseDocument) {
+      formData.append('licenseDocument', licenseDocument);
+    } 
+
+   
+    
+    const response = await axios.post(`${API_URL}/register-farmer`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
 };
+
 
 // Register supplier with file upload
 const registerSupplier = async (userData) => {
-  const response = await axios.post(`${API_URL}/register-supplier`, userData);
+  const formData = new FormData();
+    
+    // // Extract image file from the saved file input
+    const businessCertificate = document.getElementById('businessCertificate').files[0];
+    
+    // // Add all other form fields to FormData
+      Object.keys(userData).forEach(key => {
+        if (key !== 'businessCertificate') { // Skip the image object, we'll add the file directly
+          formData.append(key, userData[key]);
+        }
+      });
+    
+    // // Append the image file with the field name matching the multer middleware
+    if (businessCertificate) {
+      formData.append('businessCertificate', businessCertificate);
+    } 
+  const response = await axios.post(`${API_URL}/register-supplier`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
   
   return response.data;
 };
@@ -304,9 +349,15 @@ const getOrdersBySellerEmail = async (sellerEmail) => {
 };
 
 // Update order status
-const updateOrderStatus = async (orderId, status) => {
+const updateOrderStatus = async (orderId, status, statusTime = null) => {
   try {
-    const response = await axios.put(`${API_URL_ORDER}/status/${orderId}`, { status });
+    // Include status timestamp if provided
+    const payload = { 
+      status,
+      statusTime
+    };
+    
+    const response = await axios.put(`${API_URL_ORDER}/status/${orderId}`, payload);
     return response.data;
   } catch (error) {
     console.error('Error updating order status:', error);
@@ -384,10 +435,35 @@ const updateUserProfile = async (profileData) => {
     const response = await axios.put(updateUrl, profileData, {
       headers: {
         'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        // Log upload progress for debugging
+        console.log(`Upload progress: ${Math.round((progressEvent.loaded * 100) / progressEvent.total)}%`);
       }
     });
     
     console.log('Profile update response from server:', response.data);
+    
+    // Update localStorage with new profile data if successful
+    if (response.data.success && response.data.data) {
+      try {
+        // Get current userData from localStorage
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        
+        // Update with new data
+        const updatedUserData = {
+          ...userData,
+          ...response.data.data
+        };
+        
+        // Save back to localStorage
+        localStorage.setItem('userData', JSON.stringify(updatedUserData));
+        console.log('Updated localStorage with new profile data');
+      } catch (storageError) {
+        console.warn('Error updating localStorage:', storageError);
+      }
+    }
+    
     return response.data;
   } catch (error) {
     console.error('Error updating user profile:', error);
@@ -397,6 +473,55 @@ const updateUserProfile = async (profileData) => {
       success: false, 
       message: error.response?.data?.message || 'Failed to update profile. Please try again later.' 
     };
+  }
+};
+
+// Admin functions
+
+// Get dashboard statistics
+const getDashboardStats = async (timeframe = '6months') => {
+  try {
+    console.log(`Fetching dashboard stats for timeframe: ${timeframe}`);
+    const response = await axios.get(`${API_URL_ADMIN}/dashboard/stats`, {
+      params: { timeframe }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    return { success: false, message: error.response?.data?.message || 'Failed to fetch dashboard statistics' };
+  }
+};
+
+// Get users by type (buyer, farmer, supplier)
+const getUsersByType = async (userType) => {
+  try {
+    const response = await axios.get(`${API_URL_ADMIN}/users/${userType}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching ${userType} users:`, error);
+    return { success: false, message: error.response?.data?.message || `Failed to fetch ${userType} users` };
+  }
+};
+
+// Approve or reject user document
+const approveDocument = async (userId, documentApproval) => {
+  try {
+    const response = await axios.put(`${API_URL_ADMIN}/user/${userId}/approve-document`, { documentApproval });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating document approval status:', error);
+    return { success: false, message: error.response?.data?.message || 'Failed to update document approval status' };
+  }
+};
+
+// Delete user and all related data
+const deleteUser = async (userId) => {
+  try {
+    const response = await axios.delete(`${API_URL_ADMIN}/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return { success: false, message: error.response?.data?.message || 'Failed to delete user' };
   }
 };
 
@@ -428,7 +553,12 @@ const authService = {
   getTransactionById,
   deleteTransaction,
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  // Admin functions
+  getDashboardStats,
+  getUsersByType,
+  approveDocument,
+  deleteUser
 };
 
 export default authService;

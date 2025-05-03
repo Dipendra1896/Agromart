@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaBuilding, FaVenusMars, FaCamera, FaTimes, FaCheckCircle } from 'react-icons/fa';
 import '../styles/ProfileEditForm.css';
 import authService from '../api';
+// import axios from 'axios';
 
 const ProfileEditForm = ({ onClose, userType = 'buyer' }) => {
   // Add console log to debug user type
@@ -76,7 +77,7 @@ const ProfileEditForm = ({ onClose, userType = 'buyer' }) => {
           if (picPath) {
             const imageUrl = picPath.startsWith('http') 
               ? picPath 
-              : `http://localhost:5000${picPath}`;
+              : `http://localhost:500${picPath}`;
             setPreviewImage(imageUrl);
           }
         }
@@ -125,7 +126,7 @@ const ProfileEditForm = ({ onClose, userType = 'buyer' }) => {
               if (picPath) {
                 const imageUrl = picPath.startsWith('http') 
                   ? picPath 
-                  : `http://localhost:5000${picPath}`;
+                  : `http://localhost:500${picPath}`;
                 setPreviewImage(imageUrl);
               }
             }
@@ -165,6 +166,20 @@ const ProfileEditForm = ({ onClose, userType = 'buyer' }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        setErrorMsg('Please select an image file (JPEG, PNG, etc.)');
+        return;
+      }
+      
+      // Check file size (limit to 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setErrorMsg('Image size should be less than 2MB');
+        return;
+      }
+      
+      console.log('Profile picture selected:', file.name, file.type, file.size);
+      
       setProfileData(prevData => ({
         ...prevData,
         profilePic: file
@@ -176,6 +191,9 @@ const ProfileEditForm = ({ onClose, userType = 'buyer' }) => {
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
+      
+      // Clear any error messages
+      setErrorMsg('');
     }
   };
 
@@ -247,18 +265,35 @@ const ProfileEditForm = ({ onClose, userType = 'buyer' }) => {
         // Update localStorage with new data
         try {
           const userData = JSON.parse(localStorage.getItem('userData'));
+          
+          // Ensure we correctly update the profilePic based on the server response
+          let updatedProfilePic = userData.profilePic;
+          
+          // If a new profile picture was uploaded, use the server response data
+          if (response.data.profilePic) {
+            updatedProfilePic = response.data.profilePic;
+            console.log('Got new profile picture from server:', updatedProfilePic);
+          }
+          
           const updatedUserData = {
             ...userData,
             name: profileData.name,
             email: profileData.email,
             phoneNumber: profileData.phoneNumber,
             gender: profileData.gender,
-            // Add the profile picture if it was updated
-            profilePic: response.data.profilePic || userData.profilePic
+            profilePic: updatedProfilePic,
+            // Update user type specific fields too
+            farmName: userType === 'farmer' ? profileData.farmName : userData.farmName,
+            farmLocation: userType === 'farmer' ? profileData.farmLocation : userData.farmLocation,
+            businessName: userType === 'supplier' ? profileData.businessName : userData.businessName,
+            businessAddress: userType === 'supplier' ? profileData.businessAddress : userData.businessAddress
           };
           
           console.log('Updating localStorage with:', updatedUserData);
           localStorage.setItem('userData', JSON.stringify(updatedUserData));
+          
+          // Force a storage event to notify other components
+          window.dispatchEvent(new Event('storage'));
         } catch (storageError) {
           console.error('Error updating localStorage:', storageError);
         }
@@ -322,6 +357,7 @@ const ProfileEditForm = ({ onClose, userType = 'buyer' }) => {
                     <span>Change Photo</span>
                   </label>
                   <input 
+                    name="profilePic"
                     type="file" 
                     id="profile-pic-upload" 
                     accept="image/*" 

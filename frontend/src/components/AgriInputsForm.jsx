@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import '../styles/ProductForm.css'; // Reusing the same CSS
 import authService from '../api';
-// import { addAgriInput } from '../controller/agriInputController.js';
+
 
 const AgriInputsForm = ({ onClose }) => {
   const [formData, setFormData] = useState({
@@ -332,7 +332,7 @@ const AgriInputsForm = ({ onClose }) => {
             <input
               type="file"
               id="image"
-              name="image"
+              name="inputImage"
               accept=".jpg, .jpeg, .png,"
               onChange={handleImageChange}
               // className="file-input"

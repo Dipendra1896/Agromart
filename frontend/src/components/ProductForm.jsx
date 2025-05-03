@@ -297,7 +297,7 @@ const ProductForm = ({ onClose }) => {
             <input
               type="file"
               id="product-image"
-              name="image"
+              name="productImage"
               accept=".jpg, .jpeg, .png"
               onChange={handleImageChange}
             />

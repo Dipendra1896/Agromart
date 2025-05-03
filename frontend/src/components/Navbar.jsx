@@ -1,12 +1,32 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect, useRef } from 'react';
-import { FaShoppingCart, FaBell, FaBars, FaTimes, FaUser, FaSignOutAlt, FaClipboardList, FaHistory, FaCreditCard } from 'react-icons/fa';
+import { FaShoppingCart, FaBell, FaBars, FaTimes, FaUser, FaSignOutAlt, FaClipboardList, FaHistory, FaCreditCard, FaBox } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/Logo AgroMart.png';
 import '../styles/Navbar.css';
 import authService from '../api';
 import PropTypes from 'prop-types';
 import ProfileEditForm from './ProfileEditForm';
+
+// Helper function to get proper image URL
+const getProfileImageUrl = (profilePic) => {
+  if (!profilePic) return "https://randomuser.me/api/portraits/men/1.jpg";
+  
+  // If profilePic is a string (direct URL), use it
+  if (typeof profilePic === 'string') return profilePic;
+  
+  // If profilePic is an object with path property
+  if (typeof profilePic === 'object' && profilePic.path) {
+    // If path is a full URL, use it directly
+    if (profilePic.path.startsWith('http')) return profilePic.path;
+    
+    // If path is a relative URL (starts with /), prepend the server URL
+    if (profilePic.path.startsWith('/')) return `http://localhost:500${profilePic.path}`;
+  }
+  
+  // Fallback to default image
+  return "https://randomuser.me/api/portraits/men/1.jpg";
+};
 
 const Navbar = ({ 
   onAddProductClick, 
@@ -16,7 +36,9 @@ const Navbar = ({
   cartItemsCount = 0,
   onViewOrders,
   ordersCount = 0,
-  onViewTransactions
+  onViewTransactions,
+  onViewReceivedOrders,
+  userType = 'buyer'
 }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,11 +52,14 @@ const Navbar = ({
   const userDropdownRef = useRef(null);
   const historyDropdownRef = useRef(null);
   const [showProfileForm, setShowProfileForm] = useState(false);
+  
+  // Track profileImageUrl separately for components that need it
+  const [profileImageUrl, setProfileImageUrl] = useState("https://randomuser.me/api/portraits/men/1.jpg");
 
   // Determine dashboard type based on props
-  const isFarmerDashboard = Boolean(onAddProductClick) && onAddProductClick !== null;
-  const isSupplierDashboard = Boolean(onAddAgriInputsClick) && onAddAgriInputsClick !== null;
-  const isBuyerDashboard = !isFarmerDashboard && !isSupplierDashboard;
+  const isFarmerDashboard = userType === 'farmer';
+  const isSupplierDashboard = userType === 'supplier';
+  const isBuyerDashboard = userType === 'buyer';
 
   // Handle clicks outside the dropdown to close it
   useEffect(() => {
@@ -109,6 +134,11 @@ const Navbar = ({
         try {
           const parsedUserData = JSON.parse(userDataString);
           setUserData(parsedUserData);
+          
+          // Update profile image URL
+          setProfileImageUrl(getProfileImageUrl(parsedUserData.profilePic));
+          console.log('Profile image URL updated:', getProfileImageUrl(parsedUserData.profilePic));
+          
         } catch (error) {
           console.error('Error parsing user data:', error);
         }
@@ -124,6 +154,13 @@ const Navbar = ({
       window.removeEventListener('storage', getUserData);
     };
   }, []);
+
+  // Effect to handle profile image updates
+  useEffect(() => {
+    if (userData && userData.profilePic) {
+      setProfileImageUrl(getProfileImageUrl(userData.profilePic));
+    }
+  }, [userData]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -414,6 +451,8 @@ const Navbar = ({
       try {
         const parsedUserData = JSON.parse(userDataString);
         setUserData(parsedUserData);
+        // Update profile image URL
+        setProfileImageUrl(getProfileImageUrl(parsedUserData.profilePic));
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
@@ -453,7 +492,10 @@ const Navbar = ({
             </div>
           )}
           
-          {onViewOrders && onViewOrders !== null && (
+          {/* Display the orders icon only if there are dropdown items to show */}
+          {((userType !== 'supplier' && onViewOrders) || 
+            ((userType === 'farmer' || userType === 'supplier') && onViewReceivedOrders) || 
+            onViewTransactions) && (
             <div className="orders-icon-container">
               <FaClipboardList className={`nav-icon ${showHistoryDropdown ? 'active' : ''}`} onClick={toggleHistoryDropdown} />
               {ordersCount > 0 && (
@@ -463,9 +505,21 @@ const Navbar = ({
               {/* History Dropdown Menu */}
               {showHistoryDropdown && (
                 <div className="history-dropdown active" ref={historyDropdownRef}>
-                  <button className="history-dropdown-item" onClick={onViewOrders}>
-                    <FaHistory className="dropdown-icon" /> Order History
-                  </button>
+                  {/* Only show Order History button for non-supplier users */}
+                  {userType !== 'supplier' && onViewOrders && (
+                    <button className="history-dropdown-item" onClick={onViewOrders}>
+                      <FaHistory className="dropdown-icon" /> 
+                      {userType === 'farmer' ? 'My Purchase History' : 'Order History'}
+                    </button>
+                  )}
+                  
+                  {/* Show Received Orders for farmers and suppliers */}
+                  {(userType === 'farmer' || userType === 'supplier') && onViewReceivedOrders && (
+                    <button className="history-dropdown-item" onClick={onViewReceivedOrders}>
+                      <FaBox className="dropdown-icon" /> Received Orders
+                    </button>
+                  )}
+                  
                   {onViewTransactions && (
                     <button className="history-dropdown-item" onClick={onViewTransactions}>
                       <FaCreditCard className="dropdown-icon" /> Transaction History
@@ -479,7 +533,7 @@ const Navbar = ({
           <FaBell className="nav-icon" />
           <div className="avatar" ref={userDropdownRef} onClick={toggleUserDropdown}>
             <img 
-              src={userData?.profilePic || "https://randomuser.me/api/portraits/men/1.jpg"} 
+              src={profileImageUrl} 
               alt="User" 
             />
           </div>
@@ -526,7 +580,7 @@ const Navbar = ({
           <div className="mobile-user-info">
             <div className="mobile-avatar">
               <img 
-                src={userData?.profilePic || "https://randomuser.me/api/portraits/men/1.jpg"} 
+                src={profileImageUrl} 
                 alt="User" 
               />
             </div>
@@ -578,18 +632,22 @@ Navbar.propTypes = {
   cartItemsCount: PropTypes.number,
   onViewOrders: PropTypes.func,
   ordersCount: PropTypes.number,
-  onViewTransactions: PropTypes.func
+  onViewTransactions: PropTypes.func,
+  onViewReceivedOrders: PropTypes.func,
+  userType: PropTypes.string
 };
 
 Navbar.defaultProps = {
-  onAddProductClick: () => {},
-  onAddAgriInputsClick: () => {},
+  onAddProductClick: null,
+  onAddAgriInputsClick: null,
   showAgriInputs: false,
-  toggleCart: () => {},
+  toggleCart: null,
   cartItemsCount: 0,
-  onViewOrders: () => {},
+  onViewOrders: null,
   ordersCount: 0,
-  onViewTransactions: null
+  onViewTransactions: null,
+  onViewReceivedOrders: null,
+  userType: 'buyer'
 };
 
 export default Navbar;

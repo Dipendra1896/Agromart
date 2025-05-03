@@ -1,11 +1,11 @@
 import express from 'express';
 import { addAgriInput, getAgriInputsBySupplierEmail, getSuppliersWithAgriInputs, deleteAgriInput, updateAgriInputQuantity } from '../controller/agriInputController.js';
-import upload from '../middleware/upload.js';
+import {uploadImage} from '../middleware/upload.js';
 
 const agriInputRouter = express.Router();
 
-// Route to add new agri-input with image upload
-agriInputRouter.post('/add-agri-input', upload.single('inputImage'), addAgriInput);
+// Route to add new agri-input with image upload - keep multer middleware for backward compatibility
+agriInputRouter.post('/add-agri-input', uploadImage.single('inputImage'), addAgriInput);
 
 // Route to get agri-inputs by supplier email
 agriInputRouter.get('/supplier/:supplierEmail', getAgriInputsBySupplierEmail);

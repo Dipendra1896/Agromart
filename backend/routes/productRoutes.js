@@ -1,11 +1,11 @@
 import express from 'express';
 import { addProduct, getProductsByFarmerEmail, getFarmersWithProducts, deleteProduct, updateProductQuantity } from '../controller/productController.js';
-import upload from '../middleware/upload.js';
+import {uploadImage} from '../middleware/upload.js';
 
 const productRouter = express.Router();
 
-// Route to add new product with image upload
-productRouter.post('/add-product', upload.single('productImage'), addProduct);
+// Route to add new product with image upload - keep multer middleware for backward compatibility
+productRouter.post('/add-product', uploadImage.single('productImage'), addProduct);
 
 // Route to get products by farmer email
 productRouter.get('/farmer/:farmerEmail', getProductsByFarmerEmail);

@@ -1,4 +1,5 @@
 import Order from '../models/orderModel.js';
+import User from '../models/userModel.js';
 
 // Create a new order
 export const createOrder = async (req, res) => {
@@ -72,7 +73,11 @@ export const createOrder = async (req, res) => {
       buyerEmail,
       sellerEmail,
       orderType,
-      transactionId // Optional, only for online payments
+      transactionId, // Optional, only for online payments
+      // Initialize statusTimes with the current order date for Pending status
+      statusTimes: {
+        Pending: date || new Date()
+      }
     });
 
     console.log('Creating new order with data:', newOrder);
@@ -121,8 +126,47 @@ export const getOrdersByBuyerEmail = async (req, res) => {
 export const getOrdersBySellerEmail = async (req, res) => {
   try {
     const { sellerEmail } = req.params;
+    console.log(`Fetching orders for seller: ${sellerEmail}`);
 
-    const orders = await Order.find({ sellerEmail }).sort({ date: -1 });
+    // Find all orders for this seller
+    let orders = await Order.find({ sellerEmail }).sort({ date: -1 });
+    console.log(`Found ${orders.length} orders for seller`);
+    
+    // If we have orders, fetch the buyer names for each order
+    if (orders.length > 0) {
+      // Create a set of unique buyer emails to minimize database queries
+      const buyerEmails = [...new Set(orders.map(order => order.buyerEmail))];
+      console.log(`Unique buyer emails: ${buyerEmails.join(', ')}`);
+      
+      // Get all buyers in one query
+      const buyers = await User.find({ 
+        email: { $in: buyerEmails } 
+      }, 'email name');
+      console.log(`Found ${buyers.length} buyers from database: ${JSON.stringify(buyers)}`);
+      
+      // Create a map of email to name for quick lookups
+      const buyerMap = {};
+      buyers.forEach(buyer => {
+        buyerMap[buyer.email] = buyer.name;
+      });
+      console.log(`Buyer map created: ${JSON.stringify(buyerMap)}`);
+      
+      // Add the buyer name to each order
+      orders = orders.map(order => {
+        const orderObj = order.toObject();
+        orderObj.buyerName = buyerMap[order.buyerEmail] || null;
+        return orderObj;
+      });
+      
+      // Log the first order with buyer name
+      if (orders.length > 0) {
+        console.log(`First order with buyer name: ${JSON.stringify({
+          id: orders[0]._id,
+          buyerEmail: orders[0].buyerEmail,
+          buyerName: orders[0].buyerName
+        })}`);
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -142,7 +186,7 @@ export const getOrdersBySellerEmail = async (req, res) => {
 export const updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { status } = req.body;
+    const { status, statusTime } = req.body;
 
     // Check if status is valid
     if (!['Pending', 'Processing', 'Shipping', 'Delivered'].includes(status)) {
@@ -152,9 +196,20 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Prepare the update object
+    const updateObj = { status };
+    
+    // Store timestamp for this status change
+    if (statusTime) {
+      updateObj[`statusTimes.${status}`] = statusTime;
+    } else {
+      // Use current time if not provided
+      updateObj[`statusTimes.${status}`] = new Date().toISOString();
+    }
+
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      { status },
+      updateObj,
       { new: true }
     );
 
