@@ -71,8 +71,8 @@ export const registerBuyer = async (req, res) => {
    // Send email verification link with welcome message
    const verificationLink = `http://localhost:5173/verify-token?token=${token}&email=${email}`;
    const emailData = {
-       from: '"Agro-Mart"<koiralabishal3@gmail.com>',
-      //  from: '"Agro-Mart"<jpt1896@gmail.com>',
+      //  from: '"Agro-Mart"<koiralabishal3@gmail.com>',
+       from: '"Agro-Mart"<jpt1896@gmail.com>',
        to: email,
        subject: "Welcome to Agro-Mart as a Buyer - Verify Your Email",
        html: `
