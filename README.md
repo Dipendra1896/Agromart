@@ -23,16 +23,12 @@ This implementation protects the admin dashboard from unauthorized access and al
    - You should see a success message if the operation completes
 
 2. Alternative: Navigate to the backend directory and run the script directly
-   ```
-   cd backend
-   node create-admin.js
-   ```
 
 ## How to Access the Admin Dashboard
 
 1. Log in with the admin credentials:
-   - Email: admin@agromart.com
-   - Password: agromart123
+- Email: admin@agromart.com
+- Password: agromart123
 
 2. After successful login, navigate to /admin-dashboard or click on the admin dashboard link if available
 
